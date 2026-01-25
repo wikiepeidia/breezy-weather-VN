@@ -4,13 +4,7 @@
 - [Changelog for v4.x](docs/CHANGELOG_4.x.md)
 
 
-# Version 6.1.1 (2026-02-01)
-
-**Hotfix**
-- Fix crash on Android 11-13
-
-
-# Version 6.1.0 (2026-02-01)
+# Version 6.1.0 (not yet released)
 
 **New features**
 - Content provider: allows (with your permission) other apps to query your weather data. [Read the announcement](https://github.com/breezy-weather/breezy-weather/discussions/2089)
@@ -27,10 +21,8 @@
 
 **Weather sources**
 - BMD - Fix refresh error with recently added locations. Affected locations will need to be removed and re-added
-- CWA - Fix bulletin (@chunshek)
-- CWA - Add support for typhoon warnings (@chunshek)
-- Koninklijk Nederlands Meteorologisch Instituut - Added as a forecast, current, alert and normals source for Netherlands (@willem640)
-- Icelandic Met Office - Fix refresh error (@chunshek)
+- Koninklijk Nederlands Meteorologisch Instituut - Added as a forecast, current and normals source for Netherlands (@willem640)
+- Icelandic Met Office - Fix refresh error
 - IMS - Add support for rain quantity (@ntzb)
 - Open-Meteo - Fix day/night temperatures sometimes being shifted by 1 day
 - Pirate Weather - Fix refresh error
