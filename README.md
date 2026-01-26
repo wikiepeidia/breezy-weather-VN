@@ -1,5 +1,9 @@
 # Breezy weather fixed vietnamese address
-
+[![GitHub repo size](https://img.shields.io/github/repo-size/wikiepeidia/breezy-weather-VN)](https://github.com/wikiepeidia/breezy-weather-VN)
+[![GitHub last commit](https://img.shields.io/github/last-commit/wikiepeidia/breezy-weather-VN)](https://github.com/wikiepeidia/breezy-weather-VN/commits)
+![Commit activity](https://img.shields.io/github/commit-activity/w/wikiepeidia/breezy-weather-VN)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white) ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ## Use case
 - the app is finetuned for new administrative vietnamese address starting on july 1 2025, and since nominatim return wrong addresses and it take a very long time to fix, we can ultilize this quick patch. 
 
