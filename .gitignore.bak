@@ -12,6 +12,11 @@ build/
 *.iml
 *.ipr
 out/
+*.apk
+*.aab
+*.dm
+app/basic/release/
+app/build/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .env/
