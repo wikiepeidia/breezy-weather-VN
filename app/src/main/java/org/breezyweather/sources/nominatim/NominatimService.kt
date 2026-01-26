@@ -17,7 +17,6 @@
 package org.breezyweather.sources.nominatim
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.ui.text.input.KeyboardType
 import breezyweather.domain.location.model.LocationAddressInfo
 import breezyweather.domain.source.SourceContinent
@@ -76,7 +75,6 @@ class NominatimService @Inject constructor(
     private val mApi by lazy {
         val isLocationIQ = isLocationIqKey(instance)
         val url = if (isLocationIQ) LOCATIONIQ_BASE_URL else (instance ?: NOMINATIM_BASE_URL)
-        Log.d("NominatimService", "Initializing API. URL: $url (LocationIQ: $isLocationIQ)")
         client
             .baseUrl(url)
             .build()
@@ -126,9 +124,7 @@ class NominatimService @Inject constructor(
             format = format,
             key = key
         ).map {
-            Log.d("NominatimService", "Reverse Response: $it")
             if (it.address?.countryCode == null || it.address.countryCode.isEmpty()) {
-                Log.e("NominatimService", "Invalid Location: Address or CountryCode missing. Raw: $it")
                 throw InvalidLocationException()
             }
 
@@ -137,10 +133,7 @@ class NominatimService @Inject constructor(
     }
 
     private fun convertLocation(locationResult: NominatimLocationResult): LocationAddressInfo? {
-        Log.d("NominatimService", "convertLocation input: $locationResult")
-        
         return if (locationResult.address?.countryCode == null || locationResult.address.countryCode.isEmpty()) {
-            Log.d("NominatimService", "Dropped result due to missing countryCode")
             null
         } else {
             val countryCode = getNonAmbiguousCountryCode(locationResult.address)
@@ -153,30 +146,21 @@ class NominatimService @Inject constructor(
             if (countryCode.equals("vn", ignoreCase = true)) {
                 // Try to extract Xa/Phuong/Dac Khu from display_name
                 val displayName = locationResult.displayName
-                Log.d("NominatimService", "Parsing VN Address - Provider: ${if(isLocationIQ) "LocationIQ" else "Nominatim"}")
-                Log.d("NominatimService", "Raw DisplayName: $displayName")
-                Log.d("NominatimService", "Initial City: $city, District: $district")
 
                 if (!displayName.isNullOrEmpty()) {
                     val matcher = vnSubProvinceRegex.matcher(displayName)
                     if (matcher.find()) {
-                        val matched = matcher.group(1).trim()
-                        Log.d("NominatimService", "Regex Matched: $matched")
-                        city = matched
+                        city = matcher.group(1).trim()
                         district = null // Hide district if we found a better name
                     } else if (isLocationIQ) {
                         // Fallback logic for LocationIQ if regex fails: use first part of display_name
                         val fallback = displayName.split(",").firstOrNull()?.trim()
-                        Log.d("NominatimService", "Regex Failed. LocationIQ Fallback: $fallback")
                         if (fallback != null) {
                             city = fallback
                             district = null
                         }
-                    } else {
-                        Log.d("NominatimService", "Regex Failed. No fallback applied.")
-                    }
+                    } 
                 }
-                Log.d("NominatimService", "Final City: $city")
             }
 
             LocationAddressInfo(
