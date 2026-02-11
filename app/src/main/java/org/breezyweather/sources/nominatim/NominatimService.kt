@@ -49,7 +49,7 @@ import javax.inject.Named
  */
 class NominatimService @Inject constructor(
     @ApplicationContext context: Context,
-    @Named("JsonClient") client: Retrofit.Builder,
+    @Named("JsonClient") private val client: Retrofit.Builder,
 ) : HttpSource(), LocationSearchSource, ReverseGeocodingSource, ConfigurableSource {
 
     override val id = "nominatim"
@@ -70,7 +70,8 @@ class NominatimService @Inject constructor(
 
     // Regex for Vietnam Display Name parsing
     // Finds specific administrative prefixes: Xã, Phường, Đặc Khu (case-insensitive, with/without accents)
-    private val vnSubProvinceRegex = Pattern.compile("(?iu)(?:^|,\\s*)([^,]*?(?:xã|phường|đặc\\s*khu|xa|phuong|dac\\s*khu)[^,]*)(?:,|$)")
+    // Matches if the component strictly STARTS with the prefix to avoid garbage like "Ủy ban nhân dân..."
+    private val vnSubProvinceRegex = Pattern.compile("(?iu)^(?:xã|phường|đặc\\s*khu|xa|phuong|dac\\s*khu)\\s+.*")
 
     private val mApi by lazy {
         val isLocationIQ = isLocationIqKey(instance)
@@ -111,28 +112,90 @@ class NominatimService @Inject constructor(
     ): Observable<List<LocationAddressInfo>> {
         val key = if (isLocationIqKey(instance)) instance else null
         
-        // LocationIQ specific parameter tuning
-        val zoom = if (key != null) 18 else 13
-        val format = if (key != null) "json" else "jsonv2"
+        if (key != null) {
+            // Concurrent strategy: Call both LocationIQ and Nominatim
+            val locationIQClient = client
+                .baseUrl(LOCATIONIQ_BASE_URL)
+                .build()
+                .create(NominatimApi::class.java)
 
-        return mApi.getReverseLocation(
-            acceptLanguage = context.currentLocale.toLanguageTag(),
-            userAgent = USER_AGENT,
-            lat = latitude,
-            lon = longitude,
-            zoom = zoom,
-            format = format,
-            key = key
-        ).map {
-            if (it.address?.countryCode == null || it.address.countryCode.isEmpty()) {
-                throw InvalidLocationException()
+            val nominatimClient = client
+                .baseUrl(NOMINATIM_BASE_URL)
+                .build()
+                .create(NominatimApi::class.java)
+
+            val locationIQObs = locationIQClient.getReverseLocation(
+                acceptLanguage = context.currentLocale.toLanguageTag(),
+                userAgent = USER_AGENT,
+                lat = latitude,
+                lon = longitude,
+                zoom = 18,
+                format = "json",
+                key = key
+            ).map<List<LocationAddressInfo>> { result ->
+                convertLocation(result, isLocationIQSource = true)?.let { listOf(it) } ?: emptyList()
+            }.onErrorReturn { emptyList() }
+
+            val nominatimObs = nominatimClient.getReverseLocation(
+                acceptLanguage = context.currentLocale.toLanguageTag(),
+                userAgent = USER_AGENT,
+                lat = latitude,
+                lon = longitude,
+                zoom = 13,
+                format = "jsonv2",
+                key = null
+            ).map<List<LocationAddressInfo>> { result ->
+                convertLocation(result, isLocationIQSource = false)?.let { listOf(it) } ?: emptyList()
+            }.onErrorReturn { emptyList() }
+
+            // Helper to check if name matches the clean regex
+            fun isClean(info: LocationAddressInfo): Boolean {
+                if (info.countryCode.equals("VN", ignoreCase = true)) {
+                    return info.city != null && vnSubProvinceRegex.matcher(info.city!!).matches()
+                }
+                return true
             }
 
-            listOf(convertLocation(it)!!)
+            return Observable.zip(locationIQObs, nominatimObs) { liqList, nomList ->
+                val liqInfo = liqList.firstOrNull()
+                val nomInfo = nomList.firstOrNull()
+
+                if (liqInfo != null && isClean(liqInfo)) {
+                    liqList
+                } else if (nomInfo != null && isClean(nomInfo)) {
+                    nomList
+                } else {
+                    // Fallback prioritization
+                    if (liqInfo != null) liqList
+                    else if (nomInfo != null) nomList
+                    else throw InvalidLocationException()
+                }
+            }
+        } else {
+            val url = instance ?: NOMINATIM_BASE_URL
+            // Build client freshly to ensure correct url if instance changed, or use mApi approach if guaranteed valid
+            val api = client.baseUrl(url).build().create(NominatimApi::class.java)
+
+            return api.getReverseLocation(
+                acceptLanguage = context.currentLocale.toLanguageTag(),
+                userAgent = USER_AGENT,
+                lat = latitude,
+                lon = longitude,
+                zoom = 13,
+                format = "jsonv2",
+                key = null
+            ).map { result ->
+                if (result.address?.countryCode == null || result.address.countryCode.isEmpty()) {
+                    throw InvalidLocationException()
+                }
+                
+                // key is null here, so isLocationIQSource is false
+                listOf(convertLocation(result, isLocationIQSource = false)!!)
+            }
         }
     }
 
-    private fun convertLocation(locationResult: NominatimLocationResult): LocationAddressInfo? {
+    private fun convertLocation(locationResult: NominatimLocationResult, isLocationIQSource: Boolean = isLocationIqKey(instance)): LocationAddressInfo? {
         return if (locationResult.address?.countryCode == null || locationResult.address.countryCode.isEmpty()) {
             null
         } else {
@@ -141,20 +204,24 @@ class NominatimService @Inject constructor(
             // Vietnam Special Parsing
             var city = locationResult.address.town ?: locationResult.name
             var district = locationResult.address.village
-            val isLocationIQ = isLocationIqKey(instance)
 
             if (countryCode.equals("vn", ignoreCase = true)) {
                 // Try to extract Xa/Phuong/Dac Khu from display_name
                 val displayName = locationResult.displayName
 
                 if (!displayName.isNullOrEmpty()) {
-                    val matcher = vnSubProvinceRegex.matcher(displayName)
-                    if (matcher.find()) {
-                        city = matcher.group(1).trim()
+                    // Split matching strategy to find clean "Phường/Xã" name
+                    val parts = displayName.split(",")
+                    val cleanPart = parts.map { it.trim() }.firstOrNull { part ->
+                        vnSubProvinceRegex.matcher(part).matches()
+                    }
+
+                    if (cleanPart != null) {
+                        city = cleanPart
                         district = null // Hide district if we found a better name
-                    } else if (isLocationIQ) {
+                    } else if (isLocationIQSource) {
                         // Fallback logic for LocationIQ if regex fails: use first part of display_name
-                        val fallback = displayName.split(",").firstOrNull()?.trim()
+                        val fallback = parts.firstOrNull()?.trim()
                         if (fallback != null) {
                             city = fallback
                             district = null
