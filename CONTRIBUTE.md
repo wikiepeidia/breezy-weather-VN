@@ -12,19 +12,18 @@
 4. Your pull request is up-to-date with current `main` branch
 5. Your pull request contains 1 single commit
 
-
 ### The contribution was discussed beforehand
 
 While we welcome pull requests, before implementing any new feature/improvement, we ask you to come talk to us, to be sure it goes in the right direction. We don’t want you to spend time implementing something we don’t want (see “Rules for new features/improvements requests” section below) or implementing it the wrong way.
 
 You can also contribute to [existing issues tagged “Open to contributions”](https://github.com/breezy-weather/breezy-weather/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Open%20to%20contributions%22), or [existing ideas tagged “Open to contributions”](https://github.com/breezy-weather/breezy-weather/discussions?discussions_q=is%3Aopen+label%3A%22Open+to+contributions%22).
 
-
 ### AI guidelines
 
 AI has numerous ethical concerns (such as copyright violations and huge use of energy and water), so we prefer you only use it if strictly necessary.
 
 If you use AI or any kind of assistance tool, you use it as an assistant, meaning you're responsible for:
+
 1. **Understanding** every line of code and documentation you submit, and be able to explain the approach during review.
 2. **Ensuring it is correct, safe and appropriate**: these tools are good at generating plausible but meaningless content. So, you need to carefully review it, to avoid lowering the project code quality, or requiring unfair amount of human effort from developers and users to review contributions and detect the mistakes resulting from the use of AI.
 3. Ensuring it can be **licensed under LGPLv3** (the project license): do not use tools whose terms forbid using their output in LGPLv3-licensed projects or impose additional restrictions on redistribution.
@@ -34,24 +33,24 @@ If you can't follow them, don’t use AI.
 
 When in doubt, ask a project maintainer, before submitting the contribution.
 
-
 ### Linting
 
 You can check linting issues with `./gradlew spotlessCheck`.
 
 You can apply `./gradlew spotlessApply` if necessary.
 
-
 ### Before submitting
 
 Since you started working on your pull request, many commits might have been added, so you will need to rebase.
 
 First, make sure you added our repo as `upstream` remote:
+
 ```
 git remote add upstream https://github.com/breezy-weather/breezy-weather
 ```
 
 Then:
+
 ```
 git fetch upstream
 git rebase upstream main
@@ -66,22 +65,22 @@ Please test your changes.
 If you made multiple commits, please stash them as it makes reviewing easier. Unless the commits are about different things. Then, you need to split them into multiple pull requests.
 
 For example, if you made 2 commits, you can use:
+
 ```
 git reset --soft HEAD~2
 ```
 
 You can make a new commit, and once again, push your changes adding the `--force` argument.
 
-
 ## Rules for new features/improvements requests
 
 ### General direction
 
 Breezy Weather wants to be:
+
 - a general weather app covering most of what you can expect from a weather app, but not *all* of what you can expect. For advanced usage, some specialized apps will always cover it better
 - usable without having to be an expert to find anything in the app
 - mainly target small displays, so we don’t want to fit too many things, as we also want to let the design breathe a bit
-
 
 ### New features
 
@@ -99,7 +98,6 @@ So, the idea is to make a fair use of preferences, so if it covers too narrow of
 
 You can read [Niagara’s design principles](https://help.niagaralauncher.app/article/8-niagaras-design-principles) for a similar take on the matter (although due to the nature of this weather app, the “universal” criteria doesn’t always apply to us).
 
-
 ### New weather sources
 
 To be candidate for inclusion in the project, a weather source must not require private information such as credit card or phone number to have a free key.
@@ -111,12 +109,12 @@ Only features behind a free-tier will be accepted inside the project, so that an
 Additionally, we usually don’t accept sources that are just frontends to other sources (for example, if they use AccuWeather data, we will just use AccuWeather directly).
 
 Examples of weather sources that don’t fit:
+
 - Apple WeatherKit (no free-tier)
 - Microsoft Azure (free-tier requires credit card info)
 - Weatherbit (free-tier only has “current” feature, with only 50 requests per day, so it’s not worth the maintenance cost)
 
 Note that some national sources don’t have endpoints by coordinates, or reverse geocoding (find nearest city/station), so we can’t support them.
-
 
 ## Git setup for pull requests
 
@@ -125,31 +123,36 @@ Note that some national sources don’t have endpoints by coordinates, or revers
 Fork the project on GitHub.
 
 Clone the project locally, then add our repository as `upstream` remote:
+
 ```
 git remote add upstream https://github.com/breezy-weather/breezy-weather
 ```
 
 Create a new branch for your pull request, for example:
+
 ```
 git checkout -B mynewprovider
 ```
 
 You can start working on it!
 
-
 ## Weather sources
 
 ### Create a new Weather source
 
 Choose a unique identifier for your weather source, with only lowercase letters. Examples:
+
 - AccuWeather becomes `accu`
 - Open-Meteo becomes `openmeteo`
 
 Copy:
+
 ```
 app/src/main/java/org/breezyweather/sources/pirateweather/
 ```
+
 to:
+
 ```
 app/src/main/java/org/breezyweather/sources/<yoursourceid>/
 ```
@@ -157,12 +160,10 @@ app/src/main/java/org/breezyweather/sources/<yoursourceid>/
 We will use Pirate Weather as a base as it is the most “apply to most situations” source, without having too many specific code that most sources don’t need.
 But at each step, you can have a look at what already exists for this source if you feel like something you want to implement might already have been done on other sources.
 
-
 ### API key (optional)
 
 If you need an API key or any kind of secret, you will to need declare it in `app/build.gradle` as `breezy.<yoursourceid>.key`.
 Then declare the value in `local.properties` which is private and will not be committed.
-
 
 ### API
 
@@ -172,12 +173,12 @@ In `app/src/main/java/org/breezyweather/source/<yoursourceid>/json/<technicalnam
 
 Use `@SerialName` when the name of the field is not the same as what is in the json returned by the API.
 Example:
+
 ```kotlin
 @SerialName("is_day") val isDay: Boolean?
 ```
 
 As in the example, make as many fields as possible nullable so that in case the API doesn’t return some fields for some locations, it doesn’t fail. The serializer is configured to make nullable fields null in case the field is not in the JSON response, so you don’t need to declare `= null` as default value.
-
 
 ### Service and converter
 
@@ -206,6 +207,7 @@ You’re done, you can try building the app and test that you have empty data.
 
 **Additional note**: the Daily object expects two half days, which most sources don’t provide.
 As explained in other documents, the daytime half-day is expected from 06:00 to 17:59 and the nighttime half-day is expected from 18:00 to 05:59 (or 29:59 to keep current day notation).
+
 - If your source has half days with different hours, please follow their recommendations (for example, ColorfulClouds uses 08:00 to 19:59 and 20:00 to 07:59 (or 31:59)).
 - If your source has no half day, a typical mistake you can make is to put the minimum temperature of the day as temperature of the night. However, your source probably gives you the minimum temperature from the past overnight, not from the night to come, so make sure to pick the correct data!
 
