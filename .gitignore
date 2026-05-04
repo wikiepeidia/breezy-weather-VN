@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 .env/
 singature/
+.planning/
 ### IntelliJ IDEA ###
 .idea/*
 !.idea/icon.png
