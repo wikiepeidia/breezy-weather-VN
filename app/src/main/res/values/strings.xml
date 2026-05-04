@@ -678,6 +678,13 @@
     <string name="settings_background_updates_worker_info_enqueued" translatable="false">Enqueued</string>
     <string name="settings_background_updates_worker_info_finished" translatable="false">Finished</string>
     <string name="settings_background_updates_worker_info_running" translatable="false">Running</string>
+    <string name="settings_background_updates_section_watchdog">Watchdog Mode</string>
+    <string name="settings_background_updates_watchdog_switch">Watchdog keepalive</string>
+    <string name="settings_background_updates_watchdog_battery_opt_title">Optimize battery settings</string>
+    <string name="settings_background_updates_watchdog_battery_opt_message">For Watchdog to work reliably, disable battery optimization for this app. This allows it to run without interruption.</string>
+    <string name="settings_background_updates_watchdog_hyperios_autostart">Enable HyperOS/MIUI Autostart</string>
+    <string name="settings_background_updates_watchdog_hyperios_autostart_summary">Required on Xiaomi/Redmi/POCO devices to prevent the app from being killed</string>
+    <string name="settings_background_updates_watchdog_hyperios_autostart_not_found">Could not open Autostart settings. Go to Security app - Permissions - Autostart manually.</string>
     <!-- “Location” here means “Locating you”, check your Android settings to know the correct word -->
     <string name="settings_location">Location</string>
     <string name="settings_location_summary">Location services settings</string>
@@ -752,6 +759,7 @@
     <string name="settings_weather_source_mettelsat_instance" translatable="false">@string/settings_source_instance</string>
     <string name="settings_weather_source_msd_zw_instance" translatable="false">@string/settings_source_instance</string>
     <string name="settings_weather_source_nominatim_instance" translatable="false">@string/settings_source_instance</string>
+    <string name="settings_weather_source_nominatim_locationiq_endpoint" translatable="false">LocationIQ endpoint</string>
     <string name="settings_weather_source_pirate_weather_instance" translatable="false">@string/settings_source_instance</string>
     <string name="settings_weather_source_knmi_instance" translatable="false">@string/settings_source_instance</string>
     <string name="settings_weather_source_sma_sc_instance" translatable="false">@string/settings_source_instance</string>
@@ -895,9 +903,11 @@
     <string name="notification_channel_forecast">Forecast</string>
     <string name="notification_channel_widget">Widget</string>
     <string name="notification_channel_background_services">Background services</string>
+    <string name="notification_channel_watchdog">Background guard</string>
     <string name="notification_channel_crash_logs">Crash logs</string>
     <string name="notification_channel_app_updates">App updates</string>
     <string name="notification_running_in_background">Running in background to keep updating</string>
+    <string name="watchdog_notification_title">Background guard</string>
     <string name="notification_updating_weather_data">Updating weather data (%1$d/%2$d)</string>
     <string name="notification_precipitation_starting">Precipitation soon</string>
     <!-- Example: Expected to start at 09:00 AM -->

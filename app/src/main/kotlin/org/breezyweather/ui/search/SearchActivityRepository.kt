@@ -29,6 +29,7 @@ import org.breezyweather.common.rxjava.SchedulerTransformer
 import org.breezyweather.common.source.LocationSearchSource
 import org.breezyweather.domain.location.model.applyDefaultPreset
 import org.breezyweather.domain.settings.ConfigStore
+import org.breezyweather.domain.settings.SourceConfigStore
 import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.sources.RefreshHelper
 import org.breezyweather.sources.SourceManager
@@ -42,6 +43,7 @@ class SearchActivityRepository @Inject internal constructor(
     private val mCompositeDisposable: CompositeDisposable,
 ) {
     private val mConfig: ConfigStore = ConfigStore(context, PREFERENCE_SEARCH_CONFIG)
+    private val nominatimConfig = SourceConfigStore(context, NOMINATIM_SOURCE_ID)
 
     fun searchLocationList(
         context: Context,
@@ -190,8 +192,15 @@ class SearchActivityRepository @Inject internal constructor(
             mConfig.edit().putString(KEY_LAST_DEFAULT_SOURCE, value).apply()
         }
         get() {
-            return mConfig.getString(KEY_LAST_DEFAULT_SOURCE, null)
-                ?: BuildConfig.DEFAULT_LOCATION_SEARCH_SOURCE
+            val storedSource = mConfig.getString(KEY_LAST_DEFAULT_SOURCE, null)
+                ?.takeIf { !it.isNullOrBlank() && mSourceManager.getLocationSearchSource(it) != null }
+            val configuredNominatimInstance = nominatimConfig.getString(NOMINATIM_INSTANCE_KEY, null)
+
+            return resolveLocationSearchSource(
+                storedSource = storedSource,
+                defaultSource = BuildConfig.DEFAULT_LOCATION_SEARCH_SOURCE,
+                hasLocationIqKey = hasLocationIqKey(configuredNominatimInstance)
+            )
         }
 
     fun cancel() {
@@ -199,6 +208,25 @@ class SearchActivityRepository @Inject internal constructor(
     }
 
     companion object {
+        internal fun resolveLocationSearchSource(
+            storedSource: String?,
+            defaultSource: String,
+            hasLocationIqKey: Boolean,
+        ): String {
+            return when {
+                hasLocationIqKey && (storedSource.isNullOrBlank() || storedSource == defaultSource) -> NOMINATIM_SOURCE_ID
+                !storedSource.isNullOrBlank() -> storedSource
+                else -> defaultSource
+            }
+        }
+
+        private fun hasLocationIqKey(value: String?): Boolean {
+            return value?.trim()?.startsWith(LOCATIONIQ_KEY_PREFIX, ignoreCase = true) == true
+        }
+
+        private const val LOCATIONIQ_KEY_PREFIX = "pk."
+        private const val NOMINATIM_SOURCE_ID = "nominatim"
+        private const val NOMINATIM_INSTANCE_KEY = "instance"
         private const val PREFERENCE_SEARCH_CONFIG = "SEARCH_CONFIG"
         private const val KEY_LAST_DEFAULT_SOURCE = "LAST_DEFAULT_SOURCE"
     }

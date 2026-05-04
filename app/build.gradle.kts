@@ -23,7 +23,7 @@ configure<ApplicationExtension> {
     namespace = "org.breezyweather"
 
     defaultConfig {
-        applicationId = "org.breezyweather"
+        applicationId = "io.github.wikiepeidia.vnweather"
         versionCode = 60201
         versionName = "6.2.1"
 

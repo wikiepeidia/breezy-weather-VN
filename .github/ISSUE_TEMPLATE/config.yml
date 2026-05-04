@@ -1,11 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Idea
+  - name: Upstream Breezy Weather ideas
     url: https://github.com/breezy-weather/breezy-weather/discussions/new?category=ideas
-    about: Suggest something to improve app
+    about: General feature ideas for Breezy Weather belong upstream, not in this personal fork
   - name: Translations
     url: https://hosted.weblate.org/projects/breezy-weather/breezy-weather-android/#information
-    about: New translation, update to existing translations on Weblate
-  - name: Questions
+    about: Upstream translations are managed on Weblate
+  - name: Upstream Breezy Weather questions
     url: https://github.com/breezy-weather/breezy-weather/discussions/categories/q-a
-    about: Ask the community for help
+    about: General help and community support belong upstream, not in this personal fork
+  - name: Fork status
+    url: https://github.com/wikiepeidia/vn-weather-with-locationiq-and-nominatim#readme
+    about: Read this first if you are unsure whether this fork accepts reports or contributions

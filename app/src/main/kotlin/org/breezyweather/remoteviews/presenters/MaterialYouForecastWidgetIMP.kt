@@ -16,9 +16,11 @@
 
 package org.breezyweather.remoteviews.presenters
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.util.SizeF
 import android.view.View
@@ -376,6 +378,20 @@ private fun buildRemoteViews(
             location,
             Widgets.MATERIAL_YOU_FORECAST_PENDING_INTENT_CODE_WEATHER
         )
+    )
+
+    val refreshIntent = Intent(context, WidgetMaterialYouForecastProvider::class.java).apply {
+        action = "org.breezyweather.widget.ACTION_REFRESH_WEATHER"
+    }
+    val refreshPendingIntent = PendingIntent.getBroadcast(
+        context,
+        0,
+        refreshIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+    views.setOnClickPendingIntent(
+        R.id.widget_material_you_forecast_refresh,
+        refreshPendingIntent
     )
 
     return views

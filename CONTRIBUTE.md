@@ -1,5 +1,7 @@
 # Contributions
 
+> This repository is a personal hobby fork. The upstream contribution guide below is kept mostly for reference only. Unsolicited pull requests to this fork are usually closed. If you want to contribute to Breezy Weather itself, use the upstream project instead: [breezy-weather/breezy-weather](https://github.com/breezy-weather/breezy-weather)
+
 ## Rules for contributions
 
 ### Summary

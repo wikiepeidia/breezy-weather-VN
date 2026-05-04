@@ -27,6 +27,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
+import androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_MIN
 import androidx.core.content.ContextCompat
 import androidx.core.text.parseAsHtml
@@ -76,6 +77,9 @@ object Notifications {
     const val ID_UPDATING_AWAKE = 9
     const val ID_WEATHER_PROGRESS = -101
     const val ID_WEATHER_ERROR = -102
+
+    const val CHANNEL_WATCHDOG = "watchdog"
+    const val ID_WATCHDOG_KEEPALIVE = 10
 
     const val CHANNEL_APP_UPDATE = "app_apk_update_channel"
     const val ID_APP_UPDATER = 11
@@ -132,6 +136,18 @@ object Notifications {
                 },
                 buildNotificationChannel(CHANNEL_BACKGROUND, IMPORTANCE_MIN) {
                     setName(context.getString(R.string.notification_channel_background_services))
+                    setGroup(GROUP_BREEZY_WEATHER)
+                    setShowBadge(false)
+                },
+                buildNotificationChannel(
+                    CHANNEL_WATCHDOG,
+                    if (Build.MANUFACTURER.lowercase() in listOf("xiaomi", "redmi", "poco")) {
+                        IMPORTANCE_LOW
+                    } else {
+                        IMPORTANCE_MIN
+                    }
+                ) {
+                    setName(context.getString(R.string.notification_channel_watchdog))
                     setGroup(GROUP_BREEZY_WEATHER)
                     setShowBadge(false)
                 },
